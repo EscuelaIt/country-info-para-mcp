@@ -30,6 +30,7 @@ class Continent extends Model
             'AS', 'Asia' => '🌏',
             'EU', 'Europe' => '🏛️',
             'NA', 'North America' => '🗽',
+            'AM', 'América' => '🌎',
             'OC', 'Oceania' => '🏝️',
             'SA', 'South America' => '🦜',
             default => '🌍',

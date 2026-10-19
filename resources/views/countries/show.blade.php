@@ -18,7 +18,7 @@
                     <div class="flex items-start justify-between mb-6">
                         <div>
                             <h1 class="text-4xl font-bold">
-                                <span class="text-5xl">{{ $country->flag_emoji ?? '🏳️' }}</span>
+                                <x-flag :code="$country->cca2" class="text-5xl" />
                                 {{ $country->name }}
                             </h1>
                             <p class="text-xl text-base-content/70 mt-2">
@@ -150,7 +150,7 @@
                             <div class="space-y-2">
                                 @foreach($country->neighbors as $neighbor)
                                     <a href="{{ route('countries.show', $neighbor->id) }}" class="block p-2 bg-base-200 hover:bg-base-300 rounded transition">
-                                        <span>{{ $neighbor->flag_emoji ?? '🏳️' }}</span>
+                                        <x-flag :code="$neighbor->cca2" />
                                         <span>{{ $neighbor->name }}</span>
                                     </a>
                                 @endforeach

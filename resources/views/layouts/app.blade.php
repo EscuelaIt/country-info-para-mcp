@@ -12,9 +12,9 @@
     <body>
         <div class="min-h-screen bg-base-100">
             {{-- Navigation --}}
-            <nav class="navbar bg-base-200 shadow-md">
+            <nav class="navbar bg-base-100 border-b border-base-300 px-4">
                 <div class="flex-1">
-                    <a href="{{ route('home') }}" class="btn btn-ghost normal-case text-xl">
+                    <a href="{{ route('home') }}" class="btn btn-ghost text-xl font-bold">
                         🌍 Countries Info
                     </a>
                 </div>
@@ -26,8 +26,8 @@
             </main>
 
             {{-- Footer --}}
-            <footer class="bg-base-200 text-base-content mt-12 py-6 border-t">
-                <div class="container mx-auto px-4 text-center">
+            <footer class="footer footer-center bg-base-200 text-base-content/70 mt-16 p-6">
+                <div>
                     <p>&copy; 2026 Countries Info. All rights reserved.</p>
                 </div>
             </footer>

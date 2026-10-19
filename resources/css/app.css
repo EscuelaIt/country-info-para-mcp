@@ -1,4 +1,8 @@
 @import 'tailwindcss';
+@import 'flag-icons/css/flag-icons.min.css';
+@plugin 'daisyui' {
+    themes: emerald --default, dim --prefersdark;
+}
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -6,4 +10,8 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+html {
+    scroll-behavior: smooth;
 }
