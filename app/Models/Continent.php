@@ -21,4 +21,18 @@ class Continent extends Model
     {
         return $this->hasMany(Country::class);
     }
+
+    public function getContinentEmoji(): ?string
+    {
+        return match ($this->code ?? $this->name) {
+            'AF', 'Africa' => '🌍',
+            'AN', 'Antarctica' => '❄️',
+            'AS', 'Asia' => '🌏',
+            'EU', 'Europe' => '🏛️',
+            'NA', 'North America' => '🗽',
+            'OC', 'Oceania' => '🏝️',
+            'SA', 'South America' => '🦜',
+            default => '🌍',
+        };
+    }
 }
