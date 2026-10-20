@@ -6,13 +6,14 @@ use App\Models\Country;
 use App\Models\Currency;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\JsonSchema\Types\Type;
+use Illuminate\Validation\Rule;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Tool;
 
-#[Description('Retrieve the list of countries, ordered by name, with detailed data: ISO codes, flag, capital, continent, coordinates, area, population, Gini index, languages and currencies. See the output schema for the meaning of each field.')]
+#[Description('Retrieve the list of countries, sorted by name, population or area (by name ascending by default), optionally filtered by part of their name, by capital city and by a population range, with detailed data: ISO codes, flag, capital, continent, coordinates, area, population, Gini index, languages and currencies. See the output schema for the meaning of each field.')]
 class CountryListTool extends Tool
 {
     /**
@@ -20,8 +21,37 @@ class CountryListTool extends Tool
      */
     public function handle(Request $request): ResponseFactory
     {
+        $validated = $request->validate([
+            'name' => ['nullable', 'string', 'max:100'],
+            'capital' => ['nullable', 'string', 'max:100'],
+            'min_population' => ['nullable', 'integer', 'min:0'],
+            'max_population' => [
+                'nullable', 'integer', 'min:0',
+                Rule::when($request->get('min_population') !== null, ['gte:min_population']),
+            ],
+            'sort_by' => ['nullable', Rule::in(['name', 'population', 'area_km2'])],
+            'sort_direction' => ['nullable', Rule::in(['asc', 'desc'])],
+        ]);
+
         $countries = Country::query()
             ->with(['continent', 'currencies'])
+            ->when(
+                filled($validated['name'] ?? null),
+                fn ($query) => $query->where('name', 'like', '%'.$validated['name'].'%'),
+            )
+            ->when(
+                filled($validated['capital'] ?? null),
+                fn ($query) => $query->whereRaw('LOWER(capital) = ?', [mb_strtolower(trim($validated['capital']))]),
+            )
+            ->when(
+                isset($validated['min_population']),
+                fn ($query) => $query->where('population', '>=', $validated['min_population']),
+            )
+            ->when(
+                isset($validated['max_population']),
+                fn ($query) => $query->where('population', '<=', $validated['max_population']),
+            )
+            ->orderBy($validated['sort_by'] ?? 'name', $validated['sort_direction'] ?? 'asc')
             ->orderBy('name')
             ->get()
             ->map(fn (Country $country): array => [
@@ -59,7 +89,18 @@ class CountryListTool extends Tool
     public function schema(JsonSchema $schema): array
     {
         return [
-            //
+            'name' => $schema->string()
+                ->description('Optional case-insensitive fragment of the country common name in English to filter by (e.g. "spa" matches "Spain"). Omit it to retrieve all countries.'),
+            'capital' => $schema->string()->max(100)
+                ->description('Optional capital city to filter by. Only the countries whose capital is this city are returned. Requirements: (1) it must be the full, exact name of the city, partial names do not match (e.g. "Madrid" matches Spain, but "Mad" returns nothing); (2) it must be the English name of the city, translate it if the user gives it in another language (e.g. use "Rome", not "Roma"; "Warsaw", not "Varsovia"); (3) keep its accents and diacritics (e.g. "Bogotá", not "Bogota"). Letter case does not matter. To search by part of a name, use the "name" filter on the country instead.'),
+            'min_population' => $schema->integer()->min(0)
+                ->description('Optional minimum number of inhabitants (inclusive). Only countries with a population greater than or equal to this value are returned.'),
+            'max_population' => $schema->integer()->min(0)
+                ->description('Optional maximum number of inhabitants (inclusive). Only countries with a population less than or equal to this value are returned. Must be greater than or equal to "min_population" when both are given.'),
+            'sort_by' => $schema->string()->enum(['name', 'population', 'area_km2'])->default('name')
+                ->description('Optional field to sort the countries by: "name" (common name), "population" (number of inhabitants) or "area_km2" (surface area). Defaults to "name". Ties are broken by name.'),
+            'sort_direction' => $schema->string()->enum(['asc', 'desc'])->default('asc')
+                ->description('Optional sort direction: "asc" (ascending) or "desc" (descending). Defaults to "asc". Use "desc" to get e.g. the most populated or largest countries first.'),
         ];
     }
 
@@ -73,7 +114,7 @@ class CountryListTool extends Tool
         return [
             'count' => $schema->integer()->description('Total number of countries returned in the "countries" list.')->required(),
             'countries' => $schema->array()
-                ->description('List of countries ordered alphabetically by common name.')
+                ->description('List of countries in the requested order (alphabetically by common name by default).')
                 ->items($schema->object([
                     'name' => $schema->string()->description('Common name of the country in English (e.g. "Spain").')->required(),
                     'official_name' => $schema->anyOf([$schema->string()])->description('Official long-form name of the country (e.g. "Kingdom of Spain").')->nullable(),
