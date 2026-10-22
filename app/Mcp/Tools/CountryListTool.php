@@ -13,7 +13,7 @@ use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Tool;
 
-#[Description('Retrieve comprehensive country data combined with ACME LTDA internal business information. Returns: public data (ISO codes, flag, capital, continent, coordinates, area, population, Gini index, languages, currencies) plus proprietary ACME data (operational branches, business volume in USD, customer counts). ACME operates in the top 100 countries by population. Results can be sorted by name, population, or area (default: name ascending), and filtered by country name fragment, capital city, or population range. This tool demonstrates MCP value by providing access to internal corporate data that LLM models cannot retrieve directly.')]
+#[Description('Retrieve comprehensive country data combined with ACME LTDA internal business information. Returns: public data (ISO codes, flag, capital, continent, coordinates, area, population, Gini index, languages, currencies) plus proprietary ACME data (operational branches, business volume in USD, customer counts). ACME operates in the top 100 countries by population. Results can be sorted by name, population, area, ACME business volume, or number of ACME branches (default: name ascending), and filtered by country name fragment, capital city, population range, or ACME operations status. The acme_operations_only flag filters to only countries where ACME is actively operating. This tool demonstrates MCP value by providing access to internal corporate data that LLM models cannot retrieve directly.')]
 class CountryListTool extends Tool
 {
     /**
@@ -29,7 +29,8 @@ class CountryListTool extends Tool
                 'nullable', 'integer', 'min:0',
                 Rule::when($request->get('min_population') !== null, ['gte:min_population']),
             ],
-            'sort_by' => ['nullable', Rule::in(['name', 'population', 'area_km2'])],
+            'acme_operations_only' => ['nullable', 'boolean'],
+            'sort_by' => ['nullable', Rule::in(['name', 'population', 'area_km2', 'acme_volume_usd', 'acme_branches'])],
             'sort_direction' => ['nullable', Rule::in(['asc', 'desc'])],
         ]);
 
@@ -50,6 +51,10 @@ class CountryListTool extends Tool
             ->when(
                 isset($validated['max_population']),
                 fn ($query) => $query->where('population', '<=', $validated['max_population']),
+            )
+            ->when(
+                $validated['acme_operations_only'] ?? false,
+                fn ($query) => $query->where('acme_branches', '>', 0),
             )
             ->orderBy($validated['sort_by'] ?? 'name', $validated['sort_direction'] ?? 'asc')
             ->orderBy('name')
@@ -102,10 +107,12 @@ class CountryListTool extends Tool
                 ->description('Optional minimum number of inhabitants (inclusive). Only countries with a population greater than or equal to this value are returned.'),
             'max_population' => $schema->integer()->min(0)
                 ->description('Optional maximum number of inhabitants (inclusive). Only countries with a population less than or equal to this value are returned. Must be greater than or equal to "min_population" when both are given.'),
-            'sort_by' => $schema->string()->enum(['name', 'population', 'area_km2'])->default('name')
-                ->description('Optional field to sort the countries by: "name" (common name), "population" (number of inhabitants) or "area_km2" (surface area). Defaults to "name". Ties are broken by name.'),
+            'acme_operations_only' => $schema->boolean()->default(false)
+                ->description('Optional boolean flag (default: false). If set to true, only returns countries where ACME LTDA has operational branches (acme_branches > 0). Useful for filtering to markets where ACME is actively operating.'),
+            'sort_by' => $schema->string()->enum(['name', 'population', 'area_km2', 'acme_volume_usd', 'acme_branches'])->default('name')
+                ->description('Optional field to sort the countries by: "name" (common name), "population" (number of inhabitants), "area_km2" (surface area), "acme_volume_usd" (ACME business volume in USD), or "acme_branches" (number of ACME operational branches). Defaults to "name". Ties are broken by name.'),
             'sort_direction' => $schema->string()->enum(['asc', 'desc'])->default('asc')
-                ->description('Optional sort direction: "asc" (ascending) or "desc" (descending). Defaults to "asc". Use "desc" to get e.g. the most populated or largest countries first.'),
+                ->description('Optional sort direction: "asc" (ascending) or "desc" (descending). Defaults to "asc". Use "desc" to get e.g. the most populated, largest countries, or highest ACME volume first.'),
         ];
     }
 

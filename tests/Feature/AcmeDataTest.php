@@ -115,6 +115,50 @@ class AcmeDataTest extends TestCase
             }
         }
     }
-}
 
+    public function test_acme_operations_only_filter(): void
+    {
+        // Test filtering to only countries with ACME operations
+        $countries = Country::where('acme_branches', '>', 0)->get();
+
+        $this->assertGreaterThan(0, $countries->count());
+        $this->assertEquals(100, $countries->count()); // Only top 100 should have operations
+
+        foreach ($countries as $country) {
+            $this->assertGreaterThan(0, $country->acme_branches);
+        }
+    }
+
+    public function test_sort_by_acme_volume_usd(): void
+    {
+        // Test sorting by ACME volume in descending order
+        $countries = Country::where('acme_branches', '>', 0)
+            ->orderByDesc('acme_volume_usd')
+            ->limit(3)
+            ->get();
+
+        for ($i = 0; $i < $countries->count() - 1; $i++) {
+            $this->assertGreaterThanOrEqual(
+                $countries[$i + 1]->acme_volume_usd,
+                $countries[$i]->acme_volume_usd
+            );
+        }
+    }
+
+    public function test_sort_by_acme_branches(): void
+    {
+        // Test sorting by number of ACME branches in descending order
+        $countries = Country::where('acme_branches', '>', 0)
+            ->orderByDesc('acme_branches')
+            ->limit(3)
+            ->get();
+
+        for ($i = 0; $i < $countries->count() - 1; $i++) {
+            $this->assertGreaterThanOrEqual(
+                $countries[$i + 1]->acme_branches,
+                $countries[$i]->acme_branches
+            );
+        }
+    }
+}
 
