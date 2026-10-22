@@ -37,21 +37,16 @@ class CountryDatabaseSeeder extends Seeder
             if ($apiKey) {
                 $this->command->info('Cache no encontrado, descargando desde API...');
                 try {
-                    $response = Http::withHeaders([
-                        'Authorization' => 'Bearer '.$apiKey,
-                    ])->timeout(120)->connectTimeout(120)->retry(3, 1000)->get('https://api.restcountries.com/countries/v5?limit=100');
+                    $rawCountries = $this->fetchAllCountriesFromApi($apiKey);
 
-                    if ($response->successful()) {
-                        $data = $response->json();
-                        if (isset($data['data']['objects']) && is_array($data['data']['objects'])) {
-                            $rawCountries = $data['data']['objects'];
-                            $this->command->info('✓ Datos descargados desde la API REST Countries ('.count($rawCountries).' países)');
+                    if (! empty($rawCountries)) {
+                        $this->command->info('✓ Datos descargados desde la API REST Countries ('.count($rawCountries).' países)');
 
-                            // Cachear para futuras ejecuciones
-                            $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-                            file_put_contents($countriesFile, $json);
-                            $this->command->info('✓ Cache guardado para futuras ejecuciones');
-                        }
+                        // Cachear para futuras ejecuciones
+                        $data = ['data' => ['objects' => $rawCountries]];
+                        $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+                        file_put_contents($countriesFile, $json);
+                        $this->command->info('✓ Cache guardado para futuras ejecuciones');
                     }
                 } catch (\Exception $e) {
                     $this->command->warn('⚠ No se pudo conectar a la API: '.$e->getMessage());
@@ -264,5 +259,60 @@ class CountryDatabaseSeeder extends Seeder
         });
 
         $this->command->info('✓ Base de datos poblada exitosamente.');
+    }
+
+    private function fetchAllCountriesFromApi(string $apiKey): array
+    {
+        $allCountries = [];
+        $limit = 100;
+        $offset = 0;
+        $maxAttempts = 100;
+        $attempt = 0;
+
+        while ($attempt < $maxAttempts) {
+            try {
+                $url = "https://api.restcountries.com/countries/v5?limit={$limit}&offset={$offset}";
+
+                $response = Http::withHeaders([
+                    'Authorization' => 'Bearer '.$apiKey,
+                ])->timeout(120)->connectTimeout(120)->retry(3, 1000)->get($url);
+
+                if ($response->successful()) {
+                    $data = $response->json();
+
+                    if (isset($data['data']['objects']) && is_array($data['data']['objects'])) {
+                        $batchSize = count($data['data']['objects']);
+                        $allCountries = array_merge($allCountries, $data['data']['objects']);
+
+                        $this->command->line("  📍 Descargados países: {$offset} - ".($offset + $batchSize));
+
+                        // Si la respuesta tiene menos países que el límite, hemos llegado al final
+                        if ($batchSize < $limit) {
+                            $this->command->info('  ✓ Descarga completada');
+
+                            break;
+                        }
+
+                        $offset += $limit;
+                    } else {
+                        $this->command->warn('⚠ Respuesta del API sin estructura esperada');
+
+                        break;
+                    }
+                } else {
+                    $this->command->warn("⚠ API respondió con status {$response->status()}");
+
+                    break;
+                }
+            } catch (\Exception $e) {
+                $this->command->warn('⚠ Error descargando lote: '.$e->getMessage());
+
+                break;
+            }
+
+            $attempt++;
+        }
+
+        return $allCountries;
     }
 }
