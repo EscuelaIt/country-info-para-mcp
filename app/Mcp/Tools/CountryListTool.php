@@ -13,7 +13,7 @@ use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Tool;
 
-#[Description('Retrieve the list of countries, sorted by name, population or area (by name ascending by default), optionally filtered by part of their name, by capital city and by a population range, with detailed data: ISO codes, flag, capital, continent, coordinates, area, population, Gini index, languages and currencies. See the output schema for the meaning of each field.')]
+#[Description('Retrieve the list of countries, sorted by name, population or area (by name ascending by default), optionally filtered by part of their name, by capital city and by a population range, with detailed data: ISO codes, flag, capital, continent, coordinates, area, population, Gini index, languages, currencies, and ACME LTDA business data. See the output schema for the meaning of each field.')]
 class CountryListTool extends Tool
 {
     /**
@@ -73,6 +73,11 @@ class CountryListTool extends Tool
                     'name' => $currency->name,
                     'symbol' => $currency->symbol,
                 ])->all(),
+                'acme' => [
+                    'branches' => $country->acme_branches,
+                    'volume_usd' => $country->acme_volume_usd,
+                    'customers' => $country->acme_customers,
+                ],
             ]);
 
         return Response::structured([
@@ -137,6 +142,11 @@ class CountryListTool extends Tool
                             'symbol' => $schema->anyOf([$schema->string()])->description('Currency symbol (e.g. "€").')->nullable(),
                         ]))
                         ->required(),
+                    'acme' => $schema->object([
+                        'branches' => $schema->integer()->description('Number of ACME LTDA branches operating in the country.')->required(),
+                        'volume_usd' => $schema->integer()->description('Annual business volume of ACME LTDA in the country, in USD.')->required(),
+                        'customers' => $schema->integer()->description('Number of active ACME LTDA customers in the country.')->required(),
+                    ])->description('ACME LTDA business data for this country (only available for countries with ACME operations).')->required(),
                 ]))
                 ->required(),
         ];

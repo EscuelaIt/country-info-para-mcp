@@ -19,7 +19,7 @@ Este proyecto enseña:
 
 ```sql
 continents (6)          -- Continentes mundiales (código, nombre)
-├─ countries (99)       -- Países con detalles (ISO, capital, coordenadas, población, GINI, idiomas)
+├─ countries (99)       -- Países con detalles (ISO, capital, coordenadas, población, GINI, idiomas, datos ACME)
 │  ├─ country_currency (N:M)  -- Monedas oficiales de cada país
 │  └─ country_borders (N:M reflexiva)  -- Frontera entre países
 └─ currencies (70)      -- Monedas ISO 4217
@@ -127,7 +127,58 @@ contries-info/
 └── README.md                           ← Este archivo
 ```
 
-## 🔍 Ejemplos de Uso
+## 🏢 Datos de ACME LTDA
+
+Además de información pública de países, este servidor MCP proporciona datos de la empresa ficticia **ACME LTDA** que justifican el uso de un servidor MCP (datos que un modelo LLM no podría acceder directamente):
+
+### Campos ACME
+
+Cada país operativo incluye:
+- **`acme_branches`**: Número de sucursales de ACME en el país (0-85)
+- **`acme_volume_usd`**: Volumen de negocios anual en USD (0 a ~$47M)
+- **`acme_customers`**: Número de clientes activos (0 a ~7.4k)
+
+### Lógica de Distribución
+
+ACME opera en los **100 países más poblados** con esta estrategia:
+
+| Factor | Aplicación |
+|--------|-----------|
+| **Base** | 1 sucursal por país (top 100) |
+| **Europa** | +3-10 sucursales cada 50M hab. adicionales |
+| **Otros continentes** | +1-3 sucursales cada 50M hab. adicionales |
+| **Volumen** | $0.1M - $1M aleatorio por sucursal |
+| **Clientes Asia** | 50-100 por sucursal |
+| **Clientes otros** | 30-60 por sucursal |
+
+### Ejemplo
+
+```php
+$india = Country::where('name', 'India')->first();
+echo $india->acme_branches;     // 85 sucursales
+echo $india->acme_volume_usd;   // $17,303,365
+echo $india->acme_customers;    // 5,865 clientes
+```
+
+### Acceso vía MCP
+
+El tool `CountryListTool` retorna datos de ACME junto con información pública:
+
+```json
+{
+  "name": "India",
+  "population": 1429404000,
+  "acme": {
+    "branches": 85,
+    "volume_usd": 17303365,
+    "customers": 5865
+  }
+}
+```
+
+---
+
+
 
 ### Consultar Países
 
