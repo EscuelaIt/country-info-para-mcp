@@ -13,7 +13,7 @@ use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Tool;
 
-#[Description('Retrieve the list of countries, sorted by name, population or area (by name ascending by default), optionally filtered by part of their name, by capital city and by a population range, with detailed data: ISO codes, flag, capital, continent, coordinates, area, population, Gini index, languages, currencies, and ACME LTDA business data. See the output schema for the meaning of each field.')]
+#[Description('Retrieve comprehensive country data combined with ACME LTDA internal business information. Returns: public data (ISO codes, flag, capital, continent, coordinates, area, population, Gini index, languages, currencies) plus proprietary ACME data (operational branches, business volume in USD, customer counts). ACME operates in the top 100 countries by population. Results can be sorted by name, population, or area (default: name ascending), and filtered by country name fragment, capital city, or population range. This tool demonstrates MCP value by providing access to internal corporate data that LLM models cannot retrieve directly.')]
 class CountryListTool extends Tool
 {
     /**

@@ -8,9 +8,9 @@ use Laravel\Mcp\Server\Attributes\Instructions;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Attributes\Version;
 
-#[Name('Country Info Server')]
-#[Version('0.0.1')]
-#[Instructions('This server provides comprehensive information about countries around the world, including diverse data about each country such as geography, population, economy, culture, and other relevant information.')]
+#[Name('Country Info & ACME Business Data Server')]
+#[Version('1.0.0')]
+#[Instructions('This server provides comprehensive information about countries worldwide combined with internal business data from ACME LTDA. It includes: (1) Public country data: geography, population, capital, continents, coordinates, area, languages, currencies, and borders. (2) ACME LTDA internal data: operational branches, business volume in USD, and customer counts for each country where ACME operates. ACME operates in the top 100 countries by population with realistic distribution patterns. Note: ACME data is proprietary and only available through this server - LLM models cannot access it directly.')]
 class CountryInfoServer extends Server
 {
     protected array $tools = [
