@@ -2,6 +2,8 @@
 
 namespace App\Mcp\Servers;
 
+use App\Mcp\Resources\ContinentDetails;
+use App\Mcp\Resources\ContinentsInfo;
 use App\Mcp\Tools\CountryListTool;
 use Laravel\Mcp\Server;
 use Laravel\Mcp\Server\Attributes\Instructions;
@@ -18,7 +20,8 @@ class CountryInfoServer extends Server
     ];
 
     protected array $resources = [
-        //
+        ContinentsInfo::class,
+        ContinentDetails::class,
     ];
 
     protected array $prompts = [
