@@ -2,6 +2,7 @@
 
 namespace App\Mcp\Servers;
 
+use App\Mcp\Prompts\CountryStatus;
 use App\Mcp\Resources\ContinentDetails;
 use App\Mcp\Resources\ContinentsInfo;
 use App\Mcp\Tools\CountryListTool;
@@ -25,6 +26,6 @@ class CountryInfoServer extends Server
     ];
 
     protected array $prompts = [
-        //
+        CountryStatus::class,
     ];
 }
