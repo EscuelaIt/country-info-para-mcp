@@ -20,11 +20,10 @@ class DatabaseSeeder extends Seeder
             AcmeDataSeeder::class,
         ]);
 
-        if (! app()->isProduction()) {
-            User::factory()->create([
-                'name' => 'Test User',
-                'email' => 'test@example.com',
-            ]);
-        }
+        User::factory()->create([
+            'name' => 'Escuela User',
+            'email' => 'user@escuela.it',
+            'password' => 'password',
+        ]);
     }
 }
