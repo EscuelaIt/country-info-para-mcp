@@ -16,11 +16,24 @@ use Laravel\Mcp\Server\Tool;
 #[Description('Retrieve comprehensive country data combined with ACME LTDA internal business information. Returns: public data (ISO codes, flag, capital, continent, coordinates, area, population, Gini index, languages, currencies) plus proprietary ACME data (operational branches, business volume in USD, customer counts). ACME operates in the top 100 countries by population. Results can be sorted by name, population, area, ACME business volume, or number of ACME branches (default: name ascending), and filtered by country name fragment, capital city, population range, or ACME operations status. The acme_operations_only flag filters to only countries where ACME is actively operating. This tool demonstrates MCP value by providing access to internal corporate data that LLM models cannot retrieve directly.')]
 class CountryListTool extends Tool
 {
+
+    // public function shouldRegister(Request $request): bool
+    // {
+    //     return $request->user() !== null;
+    // }
+
     /**
      * Handle the tool request.
      */
-    public function handle(Request $request): ResponseFactory
+    public function handle(Request $request): Response|ResponseFactory
     {
+
+        $user = $request->user('sanctum');
+
+        if (! $user) {
+            return Response::error('No hay un usuario autenticado para esta sesión.');
+        }
+
         $validated = $request->validate([
             'name' => ['nullable', 'string', 'max:100'],
             'capital' => ['nullable', 'string', 'max:100'],
