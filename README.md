@@ -2,17 +2,6 @@
 
 Un proyecto educativo en **Laravel 12** que demuestra cómo construir una API robusta para información de países, continentes, monedas y relaciones fronterizas usando **datos cacheados de REST Countries API v5**.
 
-## 🎯 Objetivos Didácticos
-
-Este proyecto enseña:
-
-- ✅ **Modelos Eloquent avanzados**: Relaciones BelongsTo, BelongsToMany reflexivas, factory patterns
-- ✅ **Migraciones robustas**: Constraints, índices estratégicos, relaciones N:M
-- ✅ **Seeders con resiliencia**: Caché local, fallbacks, transacciones, manejo de errores
-- ✅ **Comandos Artisan personalizados**: Para actualizar datos sin dependencias de APIs externas
-- ✅ **Patrones de arquitectura**: Normalización de datos, casting de atributos, JSON en BD
-- ✅ **API resources**: Transformación y versionado de respuestas (próximas fases)
-
 ## 📦 Estructura de Datos
 
 ### Base de Datos
@@ -73,6 +62,19 @@ php artisan tinker
 > App\Models\Country::first()
 ```
 
+## 🔗 URLs no enlazadas desde la home
+
+La home solo enlaza al listado y al detalle de países. Las páginas de funcionalidad del curso existen pero no aparecen enlazadas en ningún sitio, para que no queden visibles si el proyecto se publica. Se accede a ellas escribiendo la URL directamente (en local, `http://localhost:8000`):
+
+| URL | Autenticación | Descripción |
+|-----|---------------|-------------|
+| `/user_login` | No | Formulario de login (Fortify). No hay registro público. |
+| `/panel` | Sesión | Panel del usuario: generar o revocar su token Bearer para el MCP. |
+| `/trips` | No | Listado de los viajes de **todos** los usuarios, agrupados por usuario (para comprobar qué ve cada uno por MCP). |
+| `/mcp/country-info` | Bearer token | Endpoint del servidor MCP (para el MCP Inspector o un cliente MCP). |
+
+Usuarios creados por el seeder (contraseña `password` en todos): `user@escuela.it`, `ana@escuela.it` y `carlos@escuela.it`.
+
 ## 🔄 Resiliencia: Caché de Datos
 
 El proyecto implementa un sistema de **3 niveles de fallback** para garantizar que el seeder nunca dependa de APIs externas:
@@ -123,7 +125,7 @@ contries-info/
 │   │   ├── countries_data.php          ← Fallback mínimo
 │   │   └── DatabaseSeeder.php
 │
-├── SETUP.md                            ← Guía detallada de configuración
+├── docs/                               ← Documentación (SETUP, ACME, MCP...)
 └── README.md                           ← Este archivo
 ```
 
@@ -294,7 +296,7 @@ DB::transaction(function () {
 
 ```env
 # .env
-REST_COUNTRIES_API_KEY=rc_live_c5a0963aac56470dbb90dc5c320d1f4c  # Opcional
+REST_COUNTRIES_API_KEY=rc_live_cxxxxxxxxx70dbbyyyyyyf4c  # Opcional
 # La clave sale de: https://www.restcountries.com/ (registro gratuito)
 ```
 
@@ -309,10 +311,19 @@ REST_COUNTRIES_API_KEY=rc_live_c5a0963aac56470dbb90dc5c320d1f4c  # Opcional
 
 ## 📖 Ver También
 
-- [SETUP.md](./SETUP.md) - Guía detallada de configuración
+- [SETUP.md](./docs/SETUP.md) - Guía detallada de configuración
 - [Laravel Eloquent Relations](https://laravel.com/docs/eloquent-relationships)
 - [Laravel Seeders](https://laravel.com/docs/seeding)
 - [REST Countries API](https://www.restcountries.com/)
+
+## Abrir inspector con npx
+
+```
+npx @modelcontextprotocol/inspector \
+  --transport http \
+  --server-url http://localhost:8000/mcp/country-info \
+  --header "Authorization: Bearer 1|Q8pef7lZXHZFPbg6HOQYvS3XgtXqJ5J2wEetRLsyd8e71e1d"
+```
 
 ## 📝 Licencia
 

@@ -5,7 +5,9 @@ namespace App\Mcp\Servers;
 use App\Mcp\Prompts\CountryStatus;
 use App\Mcp\Resources\ContinentDetails;
 use App\Mcp\Resources\ContinentsInfo;
+use App\Mcp\Tools\ChangeTripStatusTool;
 use App\Mcp\Tools\CountryListTool;
+use App\Mcp\Tools\MyTripsListTool;
 use Laravel\Mcp\Server;
 use Laravel\Mcp\Server\Attributes\Instructions;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -18,6 +20,8 @@ class CountryInfoServer extends Server
 {
     protected array $tools = [
         CountryListTool::class,
+        MyTripsListTool::class,
+        ChangeTripStatusTool::class,
     ];
 
     protected array $resources = [

@@ -21,6 +21,14 @@ enum TripStatus: string
     }
 
     /**
+     * Whether a trip in this status can no longer change its status.
+     */
+    public function isFinal(): bool
+    {
+        return $this !== self::Planned;
+    }
+
+    /**
      * DaisyUI badge class used to display the status.
      */
     public function badgeClass(): string
