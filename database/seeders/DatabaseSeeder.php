@@ -25,5 +25,19 @@ class DatabaseSeeder extends Seeder
             'email' => 'user@escuela.it',
             'password' => 'password',
         ]);
+
+        User::factory()->create([
+            'name' => 'Ana García',
+            'email' => 'ana@escuela.it',
+            'password' => 'password',
+        ]);
+
+        User::factory()->create([
+            'name' => 'Carlos Pérez',
+            'email' => 'carlos@escuela.it',
+            'password' => 'password',
+        ]);
+
+        $this->call(TripSeeder::class);
     }
 }

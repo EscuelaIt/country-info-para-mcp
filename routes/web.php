@@ -4,10 +4,12 @@ use App\Http\Controllers\ApiTokenController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PanelController;
+use App\Http\Controllers\TripController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/countries/{country}', [CountryController::class, 'show'])->name('countries.show');
+Route::get('/trips', [TripController::class, 'index'])->name('trips.index');
 
 Route::middleware('auth')->group(function () {
     Route::get('/panel', [PanelController::class, 'index'])->name('panel');
